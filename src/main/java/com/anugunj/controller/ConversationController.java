@@ -67,7 +67,6 @@ public class ConversationController {
     @PostMapping("/reset")
     public ResponseEntity<Map<String, String>> reset(HttpSession session) {
         session.removeAttribute(HISTORY_KEY);
-        session.removeAttribute(REQUEST_TIMES_KEY);
         return ResponseEntity.ok(Map.of("status", "RESET"));
     }
 
