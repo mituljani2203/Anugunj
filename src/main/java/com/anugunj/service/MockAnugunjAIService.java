@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Locale;
+import java.util.ArrayList;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,11 @@ public class MockAnugunjAIService implements AnugunjAIService {
 
     @Override
     public ConversationResponse respond(String message) {
+        return respond(message, List.of());
+    }
+
+    @Override
+    public ConversationResponse respond(String message, List<Map<String, String>> history) {
         String clean = message == null ? "" : message.trim();
         if (clean.isEmpty()) {
             return localResponse(clean);
@@ -54,10 +60,7 @@ public class MockAnugunjAIService implements AnugunjAIService {
                 "model", model == null || model.isBlank() ? "gpt-4o-mini" : model,
                 "temperature", 0.5,
                 "response_format", Map.of("type", "json_object"),
-                "messages", List.of(
-                    Map.of("role", "system", "content", SYSTEM_PROMPT),
-                    Map.of("role", "user", "content", clean)
-                )
+                "messages", buildMessages(history, clean)
             );
             SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
             requestFactory.setConnectTimeout(5000);
@@ -86,6 +89,26 @@ public class MockAnugunjAIService implements AnugunjAIService {
             log.warn("AI provider request failed; using local fallback. Cause type: {}", ex.getClass().getSimpleName());
             return localResponse(clean);
         }
+    }
+
+    private List<Map<String, String>> buildMessages(List<Map<String, String>> history, String currentMessage) {
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(Map.of("role", "system", "content", SYSTEM_PROMPT));
+        if (history != null) {
+            int start = Math.max(0, history.size() - 8);
+            for (int i = start; i < history.size(); i++) {
+                Map<String, String> item = history.get(i);
+                if (item == null) continue;
+                String role = item.get("role");
+                String content = item.get("content");
+                if (("user".equals(role) || "assistant".equals(role)) && content != null && !content.isBlank()) {
+                    String bounded = content.length() > 1500 ? content.substring(0, 1500) : content;
+                    messages.add(Map.of("role", role, "content", bounded));
+                }
+            }
+        }
+        messages.add(Map.of("role", "user", "content", currentMessage));
+        return messages;
     }
 
     private String readText(JsonNode node, String key) {
