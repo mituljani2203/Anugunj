@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 /**
  * Configurable AI adapter with a safe local fallback. Provider secrets are read
@@ -58,7 +59,11 @@ public class MockAnugunjAIService implements AnugunjAIService {
                     Map.of("role", "user", "content", clean)
                 )
             );
-            JsonNode result = restClientBuilder.build().post()
+            SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(5000);
+            requestFactory.setReadTimeout(20000);
+            RestClient client = RestClient.builder().requestFactory(requestFactory).build();
+            JsonNode result = client.post()
                 .uri(base + "/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + apiKey.trim())
@@ -86,7 +91,8 @@ public class MockAnugunjAIService implements AnugunjAIService {
     private String readText(JsonNode node, String key) {
         JsonNode value = node == null ? null : node.get(key);
         if (value == null || !value.isTextual() || value.asText().isBlank()) return null;
-        return value.asText().trim();
+        String text = value.asText().trim();
+        return text.length() > 2000 ? text.substring(0, 2000) : text;
     }
 
     private ConversationResponse localResponse(String message) {
