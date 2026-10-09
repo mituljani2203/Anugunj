@@ -73,4 +73,32 @@ class AnugunjApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("RESET"));
     }
+
+    @Test
+    void rejectsBlankMessageWithSafeClientError() throws Exception {
+        mockMvc.perform(post("/api/conversation/message")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\\"message\\":\\"   \\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.error.message").isNotEmpty());
+    }
+
+    @Test
+    void limitsRepeatedRequestsWithinOneSession() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        for (int i = 0; i < 20; i++) {
+            mockMvc.perform(post("/api/conversation/message")
+                            .session(session)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\\"message\\":\\"Hello\\"}"))
+                    .andExpect(status().isOk());
+        }
+        mockMvc.perform(post("/api/conversation/message")
+                        .session(session)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\\"message\\":\\"Hello\\"}"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
+    }
 }
