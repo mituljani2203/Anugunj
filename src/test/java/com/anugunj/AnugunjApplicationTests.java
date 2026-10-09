@@ -78,7 +78,9 @@ class AnugunjApplicationTests {
     void rejectsBlankMessageWithSafeClientError() throws Exception {
         mockMvc.perform(post("/api/conversation/message")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\\"message\\":\\"   \\"}"))
+                        .content("""
+                                {"message":"   "}
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.error.message").isNotEmpty());
@@ -91,14 +93,19 @@ class AnugunjApplicationTests {
             mockMvc.perform(post("/api/conversation/message")
                             .session(session)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\\"message\\":\\"Hello\\"}"))
+                            .content("""
+                                    {"message":"Hello"}
+                                    """))
                     .andExpect(status().isOk());
         }
         mockMvc.perform(post("/api/conversation/message")
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\\"message\\":\\"Hello\\"}"))
+                        .content("""
+                                {"message":"Hello"}
+                                """))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
     }
+}
 }
