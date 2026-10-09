@@ -8,7 +8,7 @@
 - **Source repository:** https://github.com/mituljani2203/Anugunj
 - **Hosted demo:** GitHub Pages, static HTML/CSS/JavaScript.
 - **Important limitation:** the hosted page currently uses local sample reflection rules, not a real LLM. It does not send typed messages to a server or persist conversations.
-- **Backend source:** a Java 17 / Spring Boot 3.5 modular-monolith starter is in `src/`; the current AI service is a mock implementation and needs provider integration before it can produce real AI responses.
+- **Backend source:** a Java 17 / Spring Boot 3.5 modular-monolith starter is in `src/`. It supports an optional OpenAI-compatible chat-completions provider configured only through server environment variables; without a key or when the provider fails, it falls back to local sample reflections.
 
 ## Product principles
 
@@ -70,7 +70,7 @@ These commands are documentation only; the hosted GitHub Pages site does not run
 
 ## Privacy
 
-The static prototype keeps the text entered for reflection in the current page only. Browser speech recognition may be processed by the browser/vendor service according to its implementation and terms; Anugunj itself does not upload or store the recognized transcript. The current Spring Boot mock backend is separate from the GitHub Pages site. Before enabling a hosted AI provider, disclose what message text is sent to it and review its current retention/data-use terms.
+The static prototype keeps the text entered for reflection in the current page only. Browser speech recognition may be processed by the browser/vendor service according to its implementation and terms; Anugunj itself does not upload or store the recognized transcript. The Spring Boot backend is separate from the GitHub Pages site; its optional AI provider receives message text only when configured with a server-side key. Session context is held in the server's HTTP session and cleared by the reset endpoint; it is not persisted to a database. Before enabling a hosted AI provider, disclose what message text is sent to it and review its current retention/data-use terms.
 
 ## Specification
 
