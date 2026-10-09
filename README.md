@@ -70,7 +70,7 @@ These commands are documentation only; the hosted GitHub Pages site does not run
 
 ## Privacy
 
-The static prototype keeps the text entered for reflection in the current page only. Browser speech recognition may be processed by the browser/vendor service according to its implementation and terms; Anugunj itself does not upload or store the recognized transcript. The Spring Boot backend is separate from the GitHub Pages site; its optional AI provider receives message text only when configured with a server-side key. Session context is held in the server's HTTP session and cleared by the reset endpoint; it is not persisted to a database. Before enabling a hosted AI provider, disclose what message text is sent to it and review its current retention/data-use terms.
+The static prototype keeps the text entered for reflection in the current page only. Browser speech recognition may be processed by the browser/vendor service according to its implementation and terms; Anugunj itself does not upload or store the recognized transcript. The Spring Boot backend is separate from the GitHub Pages site; its optional AI provider receives message text only when configured with a server-side key. Session context is held in the server's HTTP session for up to 30 minutes and cleared by the reset endpoint; it is not persisted to a database. The backend applies a basic limit of 20 messages per session per 10 minutes. This is a baseline safeguard, not a substitute for edge-level abuse protection. Before enabling a hosted AI provider, disclose what message text is sent to it and review its current retention/data-use terms.
 
 ## Specification
 
