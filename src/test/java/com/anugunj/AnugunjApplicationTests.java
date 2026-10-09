@@ -2,12 +2,26 @@ package com.anugunj;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.anugunj.dto.ConversationResponse;
 import com.anugunj.service.MockAnugunjAIService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
+@SpringBootTest
+@AutoConfigureMockMvc
 class AnugunjApplicationTests {
     private final MockAnugunjAIService service = new MockAnugunjAIService();
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     void returnsStructuredReflectionForOrdinaryStatement() {
@@ -21,14 +35,13 @@ class AnugunjApplicationTests {
     @Test
     void avoidsInventingHiddenEmotionForOrdinaryStatement() {
         ConversationResponse response = service.respond("I bought a new tablet");
-        org.junit.jupiter.api.Assertions.assertTrue(
-            response.interpretation().contains("won't assume"));
+        org.junit.jupiter.api.Assertions.assertTrue(response.interpretation().contains("won't assume"));
     }
 
     @Test
     void respondsToUncertaintyWithOneFollowUp() {
         ConversationResponse response = service.respond("I don't know what to do");
-        assertTrueContains(response.followUp(), "What part");
+        org.junit.jupiter.api.Assertions.assertTrue(response.followUp().contains("What part"));
     }
 
     @Test
@@ -38,8 +51,25 @@ class AnugunjApplicationTests {
         assertFalse(response.response().isBlank());
     }
 
-    private void assertTrueContains(String actual, String expected) {
-        org.junit.jupiter.api.Assertions.assertTrue(actual.contains(expected),
-            "Expected text to contain: " + expected);
+    @Test
+    void conversationEndpointReturnsStructuredResponseAndCanResetSession() throws Exception {
+        var message = post("/api/conversation/message")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"message\":\"I bought a new tablet\"}");
+
+        var result = mockMvc.perform(message)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response").isNotEmpty())
+                .andExpect(jsonPath("$.interpretation").isNotEmpty())
+                .andExpect(jsonPath("$.followUp").isNotEmpty())
+                .andReturn();
+
+        String cookie = result.getResponse().getCookie("JSESSIONID") == null ? null
+                : result.getResponse().getCookie("JSESSIONID").getValue();
+        var reset = post("/api/conversation/reset");
+        if (cookie != null) reset.cookie(new jakarta.servlet.http.Cookie("JSESSIONID", cookie));
+        mockMvc.perform(reset)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("RESET"));
     }
 }
