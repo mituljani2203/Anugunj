@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anugunj — A space to hear yourself</title>
+<link rel="stylesheet" href="/css/anugunj.css">
+</head>
+<body>
+<main class="shell">
+<header><div class="mark">અ</div><div><p class="eyebrow">A MOMENT FOR YOU</p><h1>Anugunj</h1><p class="subtitle">A space to hear yourself.</p></div><button id="reset" class="quiet" type="button">New reflection</button></header>
+<section class="intro"><p class="eyebrow">NO NEED TO HAVE IT FIGURED OUT</p><h2>What's on your mind?</h2><p>Speak naturally. Explore what you mean. You stay in control of your own interpretation.</p></section>
+<section class="composer"><label for="message">Your thoughts</label><textarea id="message" maxlength="4000" placeholder="Start wherever you are…"></textarea><div class="controls"><button id="mic" class="secondary" type="button">◉ Speak</button><span id="status" role="status">Your words stay editable.</span><button id="send" class="primary" type="button">Reflect with me ↗</button></div></section>
+<section id="result" class="result" aria-live="polite" hidden><p class="eyebrow">A GENTLE REFLECTION</p><p id="response"></p><blockquote id="interpretation"></blockquote><p id="followUp" class="follow"></p><button id="speak" class="secondary" type="button">▶ Read aloud</button></section>
+<footer><span>Curious, not certain.</span><span>Your meaning belongs to you.</span></footer>
+</main><script src="/js/app.js"></script>
+</body></html>

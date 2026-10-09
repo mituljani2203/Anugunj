@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: anugunj
+  thymeleaf:
+    cache: false
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
