@@ -6,6 +6,8 @@ on:
       - 'docs/**'
       - 'src/**'
       - 'pom.xml'
+      - 'Dockerfile'
+      - '.dockerignore'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
@@ -29,6 +31,8 @@ jobs:
           cache: maven
       - name: Run backend tests
         run: mvn --batch-mode test
+      - name: Build production container image
+        run: docker build --tag anugunj:ci .
   deploy:
     needs: test-backend
     environment:
