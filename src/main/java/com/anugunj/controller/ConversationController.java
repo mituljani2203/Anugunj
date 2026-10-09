@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 public class ConversationController {
     private static final String HISTORY_KEY = "anugunjConversationHistory";
     private static final int MAX_HISTORY_MESSAGES = 8;
+    private static final String REQUEST_TIMES_KEY = "anugunjRequestTimes";
+    private static final int MAX_REQUESTS = 20;
+    private static final long WINDOW_MILLIS = 10 * 60 * 1000L;
     private final AnugunjAIService aiService;
 
     public ConversationController(AnugunjAIService aiService) {
@@ -25,6 +30,7 @@ public class ConversationController {
     @PostMapping("/message")
     public ResponseEntity<ConversationResponse> message(
             @Valid @RequestBody ConversationRequest request, HttpSession session) {
+        enforceRateLimit(session);
         List<Map<String, String>> history = getHistory(session);
         ConversationResponse response = aiService.respond(request.message(), List.copyOf(history));
 
@@ -38,9 +44,30 @@ public class ConversationController {
         return ResponseEntity.ok(response);
     }
 
+    private void enforceRateLimit(HttpSession session) {
+        long now = System.currentTimeMillis();
+        Object stored = session.getAttribute(REQUEST_TIMES_KEY);
+        Deque<Long> times = new ArrayDeque<>();
+        if (stored instanceof List<?> values) {
+            for (Object value : values) {
+                if (value instanceof Long timestamp && now - timestamp < WINDOW_MILLIS) {
+                    times.addLast(timestamp);
+                }
+            }
+        }
+        if (times.size() >= MAX_REQUESTS) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.TOO_MANY_REQUESTS,
+                    "Please take a short pause before sending more reflections.");
+        }
+        times.addLast(now);
+        session.setAttribute(REQUEST_TIMES_KEY, new ArrayList<>(times));
+    }
+
     @PostMapping("/reset")
     public ResponseEntity<Map<String, String>> reset(HttpSession session) {
         session.removeAttribute(HISTORY_KEY);
+        session.removeAttribute(REQUEST_TIMES_KEY);
         return ResponseEntity.ok(Map.of("status", "RESET"));
     }
 
