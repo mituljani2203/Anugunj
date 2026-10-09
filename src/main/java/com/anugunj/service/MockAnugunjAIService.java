@@ -65,7 +65,7 @@ public class MockAnugunjAIService implements AnugunjAIService {
             SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
             requestFactory.setConnectTimeout(5000);
             requestFactory.setReadTimeout(20000);
-            RestClient client = RestClient.builder().requestFactory(requestFactory).build();
+            RestClient client = restClientBuilder.clone().requestFactory(requestFactory).build();
             JsonNode result = client.post()
                 .uri(base + "/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
