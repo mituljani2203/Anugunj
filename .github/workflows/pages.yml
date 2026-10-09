@@ -32,7 +32,12 @@ jobs:
       - name: Run backend tests
         run: mvn --batch-mode test
       - name: Build production container image
-        run: docker build --tag anugunj:ci .
+        run: |
+          for attempt in 1 2 3; do
+            if docker build --tag anugunj:ci .; then exit 0; fi
+            if [ "$attempt" -lt 3 ]; then echo "Container registry/build failed; retrying in 15 seconds ($attempt/3)."; sleep 15; fi
+          done
+          exit 1
   deploy:
     needs: test-backend
     environment:
