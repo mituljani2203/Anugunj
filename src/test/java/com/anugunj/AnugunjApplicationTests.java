@@ -107,4 +107,12 @@ class AnugunjApplicationTests {
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
     }
+    @Test
+    void healthEndpointDoesNotExposeConfiguration() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.apiKey").doesNotExist());
+    }
+
 }
