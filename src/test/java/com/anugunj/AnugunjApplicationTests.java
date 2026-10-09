@@ -108,4 +108,3 @@ class AnugunjApplicationTests {
                 .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
     }
 }
-}
