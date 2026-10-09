@@ -39,7 +39,7 @@ Speech-recognition support depends on the browser and device. The prototype is n
 - JUnit 5 / Spring Boot Test
 - Browser-native speech APIs for the first prototype, with a future path to a hosted provider if needed.
 
-## Run the backend locally
+## Container deployment preparation\n\nA multi-stage `Dockerfile` is included and runs the packaged application as a non-root user. GitHub Actions builds the image to catch container build failures. This repository does not publish the image or deploy the backend automatically. A hosting account and, for real AI responses, a provider API key are still required.\n\n## Run the backend locally
 
 Prerequisites: JDK 17+ and Maven. From the repository root, run:
 
@@ -53,7 +53,7 @@ Then open http://localhost:8080. To run automated tests:
 mvn test
 ```
 
-These commands are documentation only; the hosted GitHub Pages site does not run the Spring Boot backend.
+These commands are documentation only; the hosted GitHub Pages site does not run the Spring Boot backend. The container can be built with `docker build -t anugunj .` on a machine with Docker installed.
 
 ## Roadmap toward MVP v0.1
 
