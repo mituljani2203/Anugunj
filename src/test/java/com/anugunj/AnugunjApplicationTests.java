@@ -108,6 +108,26 @@ class AnugunjApplicationTests {
                 .andExpect(jsonPath("$.error.code").value("RATE_LIMITED"));
     }
     @Test
+    void rejectsMessagesLongerThanTheDocumentedLimit() throws Exception {
+        String payload = "{\\"message\\":\\"" + "x".repeat(4001) + "\\"}";
+        mockMvc.perform(post("/api/conversation/message")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void rejectsMalformedJsonWithSafeClientError() throws Exception {
+        mockMvc.perform(post("/api/conversation/message")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{not-json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.error.message").isNotEmpty());
+    }
+
+    @Test
     void healthEndpointDoesNotExposeConfiguration() throws Exception {
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/health"))
                 .andExpect(status().isOk())
