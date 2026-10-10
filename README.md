@@ -9,7 +9,7 @@
 - **Hosted demo:** GitHub Pages, static HTML/CSS/JavaScript.
 - **Backend source:** Java 17 / Spring Boot 3.5 application in `src/`, with an optional OpenAI-compatible chat-completions provider configured only through server environment variables.
 - **Important limitation:** the hosted GitHub Pages demo uses local sample reflection rules. It does not call the Spring Boot backend, so real AI responses are not active on the public demo.
-- **Verification:** the current backend suite contains 8 tests covering structured responses, ordinary statements, uncertainty, blank input, API response/reset, validation errors, session rate limiting, and the health endpoint. The latest recorded CI run passed all 8 tests; its Docker image step failed because Docker Hub returned HTTP 429, a registry rate-limit response. Container image builds are not part of the Pages deployment gate while this external registry issue is unresolved.
+- **Verification:** the latest successful CI run on 2026-10-10 ran 10 backend tests with 0 failures, 0 errors, and 0 skipped; GitHub Pages deployment also succeeded in that run. The suite covers structured responses, ordinary statements, uncertainty, blank input, API response/reset, validation errors, session rate limiting, oversized input, malformed JSON, and health configuration disclosure.
 
 ## Product principles
 
@@ -27,6 +27,7 @@
 - Browser-native speech recognition where supported, with English (India), Hindi, and Gujarati language choices.
 - Browser-native speech synthesis where supported.
 - Local example reflections, explicit feedback controls, and new-conversation reset.
+- The separate Spring Boot UI supports English (India), Hindi, and Gujarati speech recognition choices and discloses browser speech and configured AI-provider text processing.
 - No accounts, database, analytics, or permanent conversation history.
 
 Speech-recognition support depends on the browser and device. Browser speech recognition may be processed by the browser/vendor according to its own implementation and terms. The prototype is not a substitute for professional care.
@@ -43,7 +44,7 @@ Speech-recognition support depends on the browser and device. Browser speech rec
 - Structured validation/error responses and a health endpoint that does not expose secrets.
 - HTTP session timeout of 30 minutes; no database persistence of conversation history.
 
-These are source-code capabilities, not a claim that the backend is hosted or that a live provider key has been tested.
+The Spring Boot frontend sends messages to its same-origin conversation API. These are source-code capabilities, not a claim that the backend is hosted publicly or that a live provider key has been tested. The GitHub Pages prototype remains a separate static demo with local sample responses.
 
 ## Technology
 
@@ -72,7 +73,7 @@ These commands are documentation only; the hosted GitHub Pages site does not run
 
 ## Container deployment
 
-A multi-stage `Dockerfile` is included and configures a non-root runtime user. Docker image verification is currently separated from the Pages deployment workflow because GitHub Actions repeatedly received HTTP 429 from Docker Hub while fetching the base image metadata. This is a registry-rate-limit issue; the container build has not yet been verified successfully in CI. The repository does not publish a container image or deploy the backend automatically.
+A multi-stage `Dockerfile` is included and configures a non-root runtime user. Docker image verification is currently separate from the Pages deployment workflow. GitHub Actions previously received HTTP 429 from Docker Hub while fetching base image metadata, so a successful Docker build is not yet verified in CI. An attempt to create a free Render web service was rejected with HTTP 402 because Render required payment information for the account; no backend service was created. The repository does not publish a container image or deploy the backend automatically. Do not add payment information or a provider key unless the owner explicitly chooses to do so.
 
 ## MVP roadmap
 
@@ -83,11 +84,13 @@ A multi-stage `Dockerfile` is included and configures a non-root runtime user. D
 5. [x] Implement an optional server-side AI provider adapter with local fallback.
 6. [x] Add bounded session context and a reset endpoint to the backend.
 7. [x] Add provider timeouts, safe error handling, and basic rate limiting.
-8. [x] Add automated backend tests; 8 tests passed in the latest recorded run.
+8. [x] Add automated backend tests; 10 tests passed in the latest recorded CI run on 2026-10-10.
 9. [ ] Deploy the backend on a suitable low-cost/free host, ideally without a credit card.
 10. [ ] Configure a provider key securely and verify live AI responses.
 11. [ ] Verify the complete microphone → editable transcript → backend → structured reflection → read-aloud journey on mobile.
 12. [ ] Verify Docker image build and production deployment independently of the Docker Hub rate-limit issue.
+13. [x] Add speech-language selection and a clear privacy disclosure to the Spring Boot UI.
+14. [ ] Deploy the backend after an account/hosting option that can actually create the service is available.
 
 ## Privacy and data handling
 
