@@ -109,7 +109,7 @@ class AnugunjApplicationTests {
     }
     @Test
     void rejectsMessagesLongerThanTheDocumentedLimit() throws Exception {
-        String payload = "{\\"message\\":\\"" + "x".repeat(4001) + "\\"}";
+        String payload = "{\"message\":\"" + "x".repeat(4001) + "\"}";
         mockMvc.perform(post("/api/conversation/message")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
