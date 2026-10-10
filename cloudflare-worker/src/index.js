@@ -50,6 +50,22 @@ async function saveSession(session, history, env) {
   }
 }
 
+async function enforceRateLimit(session, env) {
+  if (!env.ANUGUNJ_SESSIONS) return true;
+  const key = "rate:" + session.id;
+  const now = Date.now();
+  let timestamps = [];
+  try {
+    timestamps = JSON.parse(await env.ANUGUNJ_SESSIONS.get(key) || "[]");
+    if (!Array.isArray(timestamps)) timestamps = [];
+  } catch { timestamps = []; }
+  timestamps = timestamps.filter(t => Number.isFinite(t) && now - t < 10 * 60 * 1000);
+  if (timestamps.length >= 20) return false;
+  timestamps.push(now);
+  await env.ANUGUNJ_SESSIONS.put(key, JSON.stringify(timestamps), { expirationTtl: 600 });
+  return true;
+}
+
 async function respondWithAI(message, history, env) {
   const apiKey = env.ANUGUNJ_AI_API_KEY;
   if (!apiKey) {
@@ -117,6 +133,11 @@ export default {
       if (!message) return json({ error: { code: "VALIDATION_ERROR", message: "Please enter a message." } }, 400);
       if (message.length > 4000) return json({ error: { code: "VALIDATION_ERROR", message: "Please keep your message under 4000 characters." } }, 400);
       const session = await getSession(request, env);
+      if (!(await enforceRateLimit(session, env))) {
+        const limited = json({ error: { code: "RATE_LIMITED", message: "Please take a short pause before sending more reflections." } }, 429);
+        limited.headers.append("Set-Cookie", sessionCookie(session.id));
+        return limited;
+      }
       try {
         const result = await respondWithAI(message, session.history, env);
         const history = [...session.history,
