@@ -1,0 +1,7 @@
+name = "anugunj-api"
+main = "src/index.js"
+compatibility_date = "2026-10-10"
+
+[[kv_namespaces]]
+binding = "ANUGUNJ_SESSIONS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
