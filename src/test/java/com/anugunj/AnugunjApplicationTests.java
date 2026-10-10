@@ -3,6 +3,8 @@ package com.anugunj;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,6 +25,21 @@ class AnugunjApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Test
+    void homePageShowsSpeechLanguageAndPrivacyDisclosure() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Speech language")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("message text is sent to that provider")));
+    }
+
+    @Test
+    void frontendJavascriptIsServed() throws Exception {
+        mockMvc.perform(get("/js/app.js"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("recognition.lang=languageEl")));
+    }
 
     @Test
     void returnsStructuredReflectionForOrdinaryStatement() {
